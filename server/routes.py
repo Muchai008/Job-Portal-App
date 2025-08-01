@@ -230,7 +230,7 @@ def withdraw_application(app_id):
     db.session.commit()
     return jsonify({"message": "Application withdrawn"}), 200
 
-# ---------- SAVED JOBS ----------
+#SAVED JOBS
 
 @app.route('/api/saved/<int:job_id>', methods=['POST'])
 @cross_origin(supports_credentials=True)

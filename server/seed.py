@@ -52,7 +52,7 @@ def seed():
                 user_id=random.choice(employers).id
             )
             db.session.add(job)
-            db.session.flush()  # Get the ID before commit
+            db.session.flush()  
             job_ids.append(job.id)
 
         db.session.commit()

@@ -1,5 +1,3 @@
-# server/models.py
-
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 
@@ -12,7 +10,7 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(128), nullable=False)
-    role = db.Column(db.String(20), nullable=False)  # 'jobseeker' or 'employer'
+    role = db.Column(db.String(20), nullable=False)  # jobseeker or employer
 
     jobs = db.relationship('Job', backref='employer', lazy=True)
     applications = db.relationship('Application', backref='applicant', lazy=True)

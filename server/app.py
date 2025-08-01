@@ -25,16 +25,15 @@ db = SQLAlchemy(app)
 ma = Marshmallow(app)
 bcrypt = Bcrypt(app)
 
+# Register routes AFTER initializing app, db, cors etc.
 from routes import *
 
-#for my react front-end
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def serve(path):
+# Serve React Frontend
+@app.route('/', defaults={'path': ''}, methods=['GET'])
+def index(path):
     if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
         return send_from_directory(app.static_folder, path)
-    else:
-        return send_from_directory(app.static_folder, 'index.html')
+    return send_from_directory(app.static_folder, 'index.html')
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)
