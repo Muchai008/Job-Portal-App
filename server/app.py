@@ -28,12 +28,14 @@ bcrypt = Bcrypt(app)
 # Register routes AFTER initializing app, db, cors etc.
 from routes import *
 
-# Serve React Frontend
-@app.route('/', defaults={'path': ''}, methods=['GET'])
-def index(path):
+# for React front-end (serving static files)
+@app.route('/', defaults={'path': ''}, methods=['GET'], endpoint='serve_react')
+@app.route('/<path:path>', methods=['GET'], endpoint='serve_react_path')
+def serve(path):
     if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
         return send_from_directory(app.static_folder, path)
-    return send_from_directory(app.static_folder, 'index.html')
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)
