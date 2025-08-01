@@ -6,10 +6,10 @@ from flask_cors import CORS, cross_origin
 import traceback
 
 #AUTH 
-try:
-    from routes import *
-except Exception as e:
-    print("ROUTE IMPORT ERROR:", e)
+#try:
+#    from routes import *
+#except Exception as e:
+#    print("ROUTE IMPORT ERROR:", e)
 
 @app.route('/api/auth/signup', methods=['POST'])
 @cross_origin(supports_credentials=True)
