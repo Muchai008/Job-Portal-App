@@ -1,7 +1,8 @@
 from flask import Flask, send_from_directory
 import os
 
-app = Flask(__name__, static_folder='../client/build', static_url_path='')
+# Use build folder in same directory as app.py
+app = Flask(__name__, static_folder='./build', static_url_path='')
 
 def serve_react_file(path='index.html'):
     """Helper function to serve React files"""
