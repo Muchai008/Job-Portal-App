@@ -1,88 +1,77 @@
-from app import app, db
-from models import User, Job, Application, SavedJob
-from faker import Faker
-import random
+from app import app
+from models import db, User, Job, Application, SavedJob
 
-fake = Faker()
+with app.app_context():
+    # Clear existing data
+    db.drop_all()
+    db.create_all()
 
-def seed():
-    with app.app_context():
-        print(" Dropping all tables...")
-        db.drop_all()
+    # Create users
+    employer1 = User(username='employer1', email='employer1@example.com', role='employer')
+    employer1.set_password('password123')
 
-        print(" Creating all tables...")
-        db.create_all()
+    employer2 = User(username='employer2', email='employer2@example.com', role='employer')
+    employer2.set_password('password123')
 
-        print("Creating users...")
-        users = []
-        for i in range(5):
-            user = User(
-                username=fake.user_name(),
-                email=fake.unique.email(),
-                role='jobseeker'
-            )
-            user.set_password('password')
-            users.append(user)
-            db.session.add(user)
+    jobseeker1 = User(username='jobseeker1', email='jobseeker1@example.com', role='jobseeker')
+    jobseeker1.set_password('password123')
 
-        for i in range(5):
-            user = User(
-                username=fake.user_name(),
-                email=fake.unique.email(),
-                role='employer'
-            )
-            user.set_password('password')
-            users.append(user)
-            db.session.add(user)
+    jobseeker2 = User(username='jobseeker2', email='jobseeker2@example.com', role='jobseeker')
+    jobseeker2.set_password('password123')
 
-        db.session.commit()
+    db.session.add_all([employer1, employer2, jobseeker1, jobseeker2])
+    db.session.commit()
 
-        print("Creating jobs...")
-        employers = [u for u in users if u.role == 'employer']
-        job_ids = []
-        for _ in range(10):
-            job = Job(
-                title=fake.job(),
-                description=fake.paragraph(nb_sentences=5),
-                location=fake.city(),
-                salary=f"${random.randint(30000, 120000)}",
-                job_type=random.choice(['Full-time', 'Part-time', 'Remote']),
-                category=random.choice(['Engineering', 'Design', 'Marketing', 'Sales']),
-                experience_required=random.choice(['None', '1 year', '2+ years', '5+ years']),
-                user_id=random.choice(employers).id
-            )
-            db.session.add(job)
-            db.session.flush()  
-            job_ids.append(job.id)
+    # Create jobs
+    job1 = Job(
+        title='Software Engineer',
+        description='Develop and maintain software solutions.',
+        location='Nairobi',
+        salary='100,000 KES',
+        job_type='Full-time',
+        category='IT',
+        experience_required='2 years',
+        user_id=employer1.id
+    )
 
-        db.session.commit()
+    job2 = Job(
+        title='Data Analyst',
+        description='Analyze and interpret complex data sets.',
+        location='Mombasa',
+        salary='80,000 KES',
+        job_type='Full-time',
+        category='Data',
+        experience_required='1 year',
+        user_id=employer2.id
+    )
 
-        print("📄 Creating applications...")
-        jobseekers = [u for u in users if u.role == 'jobseeker']
-        for seeker in jobseekers:
-            applied_jobs = random.sample(job_ids, k=3)
-            for job_id in applied_jobs:
-                application = Application(
-                    status=random.choice(['pending', 'accepted', 'rejected', 'interview']),
-                    user_id=seeker.id,
-                    job_id=job_id
-                )
-                db.session.add(application)
+    job3 = Job(
+        title='Graphic Designer',
+        description='Create engaging and on-brand graphics.',
+        location='Kisumu',
+        salary='60,000 KES',
+        job_type='Part-time',
+        category='Design',
+        experience_required='3 years',
+        user_id=employer1.id
+    )
 
-        db.session.commit()
+    db.session.add_all([job1, job2, job3])
+    db.session.commit()
 
-        print("Creating saved jobs...")
-        for seeker in jobseekers:
-            saved_jobs = random.sample(job_ids, k=2)
-            for job_id in saved_jobs:
-                saved = SavedJob(
-                    user_id=seeker.id,
-                    job_id=job_id
-                )
-                db.session.add(saved)
+    # Create applications
+    application1 = Application(user_id=jobseeker1.id, job_id=job1.id, status='pending')
+    application2 = Application(user_id=jobseeker2.id, job_id=job2.id, status='accepted')
+    application3 = Application(user_id=jobseeker1.id, job_id=job3.id, status='rejected')
 
-        db.session.commit()
-        print("Database seeded successfully!")
+    db.session.add_all([application1, application2, application3])
+    db.session.commit()
 
-if __name__ == '__main__':
-    seed()
+    # Create saved jobs
+    saved1 = SavedJob(user_id=jobseeker1.id, job_id=job2.id)
+    saved2 = SavedJob(user_id=jobseeker2.id, job_id=job1.id)
+
+    db.session.add_all([saved1, saved2])
+    db.session.commit()
+
+    print("Database seeded successfully!")

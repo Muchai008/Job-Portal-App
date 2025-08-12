@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: job-portal-backend
+    env: python
+    region: oregon
+    buildCommand: "pip install -r server/requirements.txt"
+    startCommand: "python server/app.py"
+    envVars:
+      - key: FLASK_ENV
+        value: production
+    plan: free

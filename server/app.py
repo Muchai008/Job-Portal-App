@@ -1,30 +1,59 @@
-from flask import Flask, send_from_directory
 import os
+from flask import Flask, send_from_directory
+from flask_cors import CORS
+from flask_session import Session
+from models import db, bcrypt
 
-# Use build folder in same directory as app.py
-app = Flask(__name__, static_folder='./build', static_url_path='')
+# Create Flask app
+app = Flask(__name__, static_folder="./build", static_url_path="")
 
-def serve_react_file(path='index.html'):
-    """Helper function to serve React files"""
-    try:
-        # Try to serve the requested file from the build directory
+# ====================
+# Configuration
+# ====================
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
+    "DATABASE_URL", "sqlite:///jobs.db"
+)
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "supersecretkey")
+app.config["SESSION_TYPE"] = "filesystem"
+app.config["SESSION_PERMANENT"] = False
+
+# Initialize extensions
+db.init_app(app)
+bcrypt.init_app(app)
+Session(app)
+CORS(app, supports_credentials=True)
+
+# ====================
+# Import routes
+# ====================
+import routes  # noqa: E402
+
+# ====================
+# Serve React build
+# ====================
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def serve_react(path):
+    """
+    Serves the React frontend for any non-API route.
+    """
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
         return send_from_directory(app.static_folder, path)
-    except FileNotFoundError:
-        # If file not found, serve index.html (for client-side routing)
-        return send_from_directory(app.static_folder, 'index.html')
+    else:
+        # Fallback to index.html for client-side routing
+        return send_from_directory(app.static_folder, "index.html")
 
-# Route for root URL (/)
-@app.route('/', methods=['GET'])
-def home():
-    return serve_react_file('index.html')
+# ====================
+# CLI command for local DB setup (not run in prod)
+# ====================
+@app.cli.command("create-db")
+def create_db():
+    """Create database tables."""
+    with app.app_context():
+        db.create_all()
+        print("Database tables created.")
 
-# Route for all other paths (catch-all for React routing)
-@app.route('/<path:path>', methods=['GET'])
-def serve_react_path(path):
-    return serve_react_file(path)
-
-if __name__ == '__main__':
-    # Get port from environment variable (Render sets this to 10000 by default)
-    port = int(os.environ.get('PORT', 10000))
-    # Bind to 0.0.0.0 as required by Render
-    app.run(host='0.0.0.0', port=port, debug=False)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
